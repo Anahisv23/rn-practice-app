@@ -1,131 +1,163 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  Button,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+type RootStackParamList = {
+  Home: undefined;
+  EventDetails: { eventId: number };
+  ConfirmBooking: { eventId: number; tickets: number };
+  About: undefined;
+};
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const events = [
+  { id: 1, image:'https://d3vhc53cl8e8km.cloudfront.net/hello-staging/wp-content/uploads/sites/92/2025/02/24100634/ZITP2024_0906_191508-0168_JAE-scaled.jpg', name: 'Lost in Dreams', location: 'LA', price: 80 },
+  { id: 2, image:'https://res.cloudinary.com/traveltripperweb/image/upload/c_fit,f_auto,h_1200,q_auto,w_1200/v1715007144/p3in7ffjqolwmrmf6iag.jpg' , name: 'Cherry Blossom Tour', location: 'NYC', price: 30 },
+  { id: 3, image:'https://houseofdezign.com/wp-content/uploads/2024/07/Painting-on-Canvas-for-Adults.jpg' , name: 'Paint and Wine', location: 'Orange County', price: 25 },
+  { id: 4, image:'https://images.squarespace-cdn.com/content/v1/57c46e6737c581f0c4d501ce/312addfd-933d-4330-8d6c-d921883d7c9e/MyCheekyDate+LA+Dating' , name: 'Speed Dating', location: 'LA', price: 15 },
+];
+
+const HomeScreen = ({ navigation }: any) => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Events</Text>
+      <FlatList
+        data={events}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('EventDetails', { eventId: item.id })}
+          >
+            <Image   
+              source={{ uri: item.image }}
+              style={{ width: 330, height: 170, borderRadius: 10, marginBottom: 10 }}
+              resizeMode="cover" />
+            <Text style={styles.eventName}>{item.name}</Text>
+            <Text>{item.location}</Text>
+          </TouchableOpacity>
+        )}
+      />
+      <Button 
+        title="About the App" onPress={() => navigation.navigate('About')} />
     </View>
   );
-}
+};
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const EventDetailsScreen = ({ route, navigation }: any) => {
+  const { eventId } = route.params;
+  const event = events.find((e) => e.id === eventId);
+  const [tickets, setTickets] = useState(1);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
+  if (!event) return <Text>Event not found</Text>;
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <View style={styles.container}>
+      <Text style={styles.title}>{event.name}</Text>
+      <Image   
+              source={{ uri: event.image }}
+              style={{ width: 350, height: 150 }}
+              resizeMode="cover" />
+      <Text>Location: {event.location}</Text>
+      <Text>Price: ${event.price} per ticket</Text>
+      <Text style={{ marginTop: 20 }}>Select Tickets:</Text>
+      <View style={styles.buttonRow}>
+        <Button title="-" onPress={() => setTickets(Math.max(1, tickets - 1))} />
+        <Text style={styles.tickets}>{tickets}</Text>
+        <Button title="+" onPress={() => setTickets(tickets + 1)} />
+      </View>
+      <Button
+        title="Book Tickets"
+        onPress={() =>
+          navigation.navigate('ConfirmBooking', {
+            eventId: event.id,
+            tickets,
+          })
+        }
       />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
     </View>
+  );
+};
+
+const ConfirmBookingScreen = ({ route, navigation }: any) => {
+  const { eventId, tickets } = route.params;
+  const event = events.find((e) => e.id === eventId);
+
+  if (!event) return <Text>Event not found</Text>;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Booking Confirmed!</Text>
+      <Image   
+              source={{ uri: event.image }}
+              style={{ width: 350, height: 150 }}
+              resizeMode="cover" />
+      <Text>{tickets} ticket(s) for:</Text>
+      <Text>{event.name}</Text>
+      <Text>Total: ${event.price * tickets}</Text>
+      <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
+    </View>
+  );
+};
+
+const AboutScreen = () => (
+  <View style={styles.container}>
+    <Text style={styles.title}>About This App</Text>
+    <Text>Simple booking app for test/demo purposes.</Text>
+  </View>
+);
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Event Details" component={EventDetailsScreen} />
+        <Stack.Screen name="Confirm Booking" component={ConfirmBookingScreen} />
+        <Stack.Screen name="About" component={AboutScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    padding: 20,
   },
-  sectionTitle: {
-    fontSize: 24,
+  card: {
+    backgroundColor: '#eee',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  eventName: {
+    fontSize: 18,
     fontWeight: '600',
   },
-  sectionDescription: {
-    marginTop: 8,
+  tickets: {
     fontSize: 18,
-    fontWeight: '400',
+    marginHorizontal: 15,
+    alignSelf: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  buttonRow: {
+    flexDirection: 'row',
+    marginVertical: 10,
+    alignItems: 'center',
   },
 });
-
-export default App;
