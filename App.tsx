@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   Home: undefined;
@@ -18,16 +19,45 @@ type RootStackParamList = {
   About: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
 
 const events = [
-  { id: 1, image:'https://d3vhc53cl8e8km.cloudfront.net/hello-staging/wp-content/uploads/sites/92/2025/02/24100634/ZITP2024_0906_191508-0168_JAE-scaled.jpg', name: 'Lost in Dreams', location: 'LA', price: 80 },
-  { id: 2, image:'https://res.cloudinary.com/traveltripperweb/image/upload/c_fit,f_auto,h_1200,q_auto,w_1200/v1715007144/p3in7ffjqolwmrmf6iag.jpg' , name: 'Cherry Blossom Tour', location: 'NYC', price: 30 },
-  { id: 3, image:'https://houseofdezign.com/wp-content/uploads/2024/07/Painting-on-Canvas-for-Adults.jpg' , name: 'Paint and Wine', location: 'Orange County', price: 25 },
-  { id: 4, image:'https://images.squarespace-cdn.com/content/v1/57c46e6737c581f0c4d501ce/312addfd-933d-4330-8d6c-d921883d7c9e/MyCheekyDate+LA+Dating' , name: 'Speed Dating', location: 'LA', price: 15 },
+  {
+    id: 1,
+    image:
+      'https://d3vhc53cl8e8km.cloudfront.net/hello-staging/wp-content/uploads/sites/92/2025/02/24100634/ZITP2024_0906_191508-0168_JAE-scaled.jpg',
+    name: 'Lost in Dreams',
+    location: 'LA',
+    price: 80,
+  },
+  {
+    id: 2,
+    image:
+      'https://res.cloudinary.com/traveltripperweb/image/upload/c_fit,f_auto,h_1200,q_auto,w_1200/v1715007144/p3in7ffjqolwmrmf6iag.jpg',
+    name: 'Cherry Blossom Tour',
+    location: 'NYC',
+    price: 30,
+  },
+  {
+    id: 3,
+    image:
+      'https://houseofdezign.com/wp-content/uploads/2024/07/Painting-on-Canvas-for-Adults.jpg',
+    name: 'Paint and Wine',
+    location: 'Orange County',
+    price: 25,
+  },
+  {
+    id: 4,
+    image:
+      'https://images.squarespace-cdn.com/content/v1/57c46e6737c581f0c4d501ce/312addfd-933d-4330-8d6c-d921883d7c9e/MyCheekyDate+LA+Dating',
+    name: 'Speed Dating',
+    location: 'LA',
+    price: 15,
+  },
 ];
 
-const HomeScreen = ({ navigation }: any) => {
+type HomeProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+const HomeScreen = ({ navigation }: HomeProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Events</Text>
@@ -39,22 +69,23 @@ const HomeScreen = ({ navigation }: any) => {
             style={styles.card}
             onPress={() => navigation.navigate('EventDetails', { eventId: item.id })}
           >
-            <Image   
+            <Image
               source={{ uri: item.image }}
               style={{ width: 330, height: 170, borderRadius: 10, marginBottom: 10 }}
-              resizeMode="cover" />
+              resizeMode="cover"
+            />
             <Text style={styles.eventName}>{item.name}</Text>
             <Text>{item.location}</Text>
           </TouchableOpacity>
         )}
       />
-      <Button 
-        title="About the App" onPress={() => navigation.navigate('About')} />
+      <Button title="About the App" onPress={() => navigation.navigate('About')} />
     </View>
   );
 };
 
-const EventDetailsScreen = ({ route, navigation }: any) => {
+type EventDetailsProps = NativeStackScreenProps<RootStackParamList, 'EventDetails'>;
+const EventDetailsScreen = ({ route, navigation }: EventDetailsProps) => {
   const { eventId } = route.params;
   const event = events.find((e) => e.id === eventId);
   const [tickets, setTickets] = useState(1);
@@ -64,10 +95,7 @@ const EventDetailsScreen = ({ route, navigation }: any) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{event.name}</Text>
-      <Image   
-              source={{ uri: event.image }}
-              style={{ width: 350, height: 150 }}
-              resizeMode="cover" />
+      <Image source={{ uri: event.image }} style={{ width: 350, height: 150 }} resizeMode="cover" />
       <Text>Location: {event.location}</Text>
       <Text>Price: ${event.price} per ticket</Text>
       <Text style={{ marginTop: 20 }}>Select Tickets:</Text>
@@ -78,18 +106,14 @@ const EventDetailsScreen = ({ route, navigation }: any) => {
       </View>
       <Button
         title="Book Tickets"
-        onPress={() =>
-          navigation.navigate('ConfirmBooking', {
-            eventId: event.id,
-            tickets,
-          })
-        }
+        onPress={() => navigation.navigate('ConfirmBooking', { eventId: event.id, tickets })}
       />
     </View>
   );
 };
 
-const ConfirmBookingScreen = ({ route, navigation }: any) => {
+type ConfirmBookingProps = NativeStackScreenProps<RootStackParamList, 'ConfirmBooking'>;
+const ConfirmBookingScreen = ({ route, navigation }: ConfirmBookingProps) => {
   const { eventId, tickets } = route.params;
   const event = events.find((e) => e.id === eventId);
 
@@ -98,10 +122,7 @@ const ConfirmBookingScreen = ({ route, navigation }: any) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Booking Confirmed!</Text>
-      <Image   
-              source={{ uri: event.image }}
-              style={{ width: 350, height: 150 }}
-              resizeMode="cover" />
+      <Image source={{ uri: event.image }} style={{ width: 350, height: 150 }} resizeMode="cover" />
       <Text>{tickets} ticket(s) for:</Text>
       <Text>{event.name}</Text>
       <Text>Total: ${event.price * tickets}</Text>
@@ -122,8 +143,8 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Event Details" component={EventDetailsScreen} />
-        <Stack.Screen name="Confirm Booking" component={ConfirmBookingScreen} />
+        <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
+        <Stack.Screen name="ConfirmBooking" component={ConfirmBookingScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
       </Stack.Navigator>
     </NavigationContainer>
