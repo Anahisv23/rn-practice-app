@@ -55,11 +55,10 @@ export const config: WebdriverIO.Config = {
     capabilities: [
         {
         platformName: 'Android',
-        browserName: 'Chrome',
-        'appium:deviceName': 'Pixel 9 API 35',
-        'appium:platformVersion': '15.0',
+        'appium:deviceName': 'Pixel 9 API 36',
+        'appium:platformVersion': '16',
         'appium:automationName': 'UiAutomator2',
-        'appium:app': '/Users/anahisvalenzuela/RNPracticeApp/android/app/build/outputs/apk/debug'
+        'appium:app': '/Users/anahisvalenzuela/RNPracticeApp/android/app/build/outputs/apk/debug/app-debug.apk'
     },
     {
         platformName: 'iOS',
@@ -243,8 +242,15 @@ export const config: WebdriverIO.Config = {
      * @param {boolean} result.passed    true if test has passed, otherwise false
      * @param {object}  result.retries   information about spec related retries, e.g. `{ attempts: 0, limit: 0 }`
      */
-    // afterTest: function(test, context, { error, result, duration, passed, retries }) {
-    // },
+    afterTest: async() => {
+        if(driver.isAndroid) {
+            await driver.execute('mobile: terminateApp', { appId: "com.rnpracticeapp" })
+            await driver.execute('mobile: activateApp', { appId: "com.rnpracticeapp" })
+        } else if (driver.isIOS) {
+            await driver.execute('mobile: terminateApp', { bundleId: 'org.reactjs.native.example.RNPracticeApp' });
+            await driver.execute('mobile: activateApp', { bundleId: 'org.reactjs.native.example.RNPracticeApp' });
+        }
+    },
 
 
     /**
